@@ -282,6 +282,7 @@ echo "${UNATTENDED_UPGRADE_PERIODIC_SCRIPT_CONTENT}" | sudo tee /etc/apt/apt.con
 
 echo "" && echo "[INFO] configuring nginx ..."
 sudo sed -i -e "s/# server_tokens off;/server_tokens off;/g" /etc/nginx/nginx.conf
+sudo sed -i -e "s/# server_names_hash_bucket_size 64;/server_names_hash_bucket_size 64;/g" /etc/nginx/nginx.conf
 
 sudo rm /etc/nginx/sites-enabled/default
 
