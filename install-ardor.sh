@@ -57,14 +57,13 @@ export LC_CTYPE=\"en_US.UTF-8\"
 NGINX_MAINNET_GATEWAY_CONFIGURATION_FILE_CONTENT="
 server {
   listen 80;
-  listen [::]:80;
 
   server_name ${MAINNET_DOMAIN};
 
   location / {
       proxy_bind 127.0.0.1;
       proxy_set_header Host \$host;
-      proxy_pass http://localhost:27876/;
+      proxy_pass http://127.0.0.1:27876/;
   }
 }
 "
@@ -73,14 +72,13 @@ server {
 NGINX_TESTNET_GATEWAY_CONFIGURATION_FILE_CONTENT="
 server {
   listen 80;
-  listen [::]:80;
 
   server_name ${TESTNET_DOMAIN};
 
   location / {
       proxy_bind 127.0.0.1;
       proxy_set_header Host \$host;
-      proxy_pass http://localhost:26876/;
+      proxy_pass http://127.0.0.1:26876/;
   }
 }
 "
