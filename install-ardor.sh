@@ -421,11 +421,12 @@ rm -rf ardor install-ardor.sh *.zip *.zip.asc *.txt
 
 
 echo "" && echo "[INFO] Server ready to go."
-echo "[INFO] It can take up to 10 minutes (depending on the server) to create the database."
-echo "[INFO] During this time, the nodes response with 502 Bad Gateway and are not accessible."
+echo "[INFO] In case you didn't select the blockchain download option,"
+echo "[INFO] it can take up to 10 minutes (depending on the server) to create the database."
+echo "[INFO] During this time, the node(s) response with 502 Bad Gateway and is (are) not accessible."
 echo "[INFO] To run the contract runner, uncomment the parameter in <ardor folder>/conf/nxt.properties"
 echo "[INFO] and configure them properly."
-echo "[INFO] Press any key to continue"‚
+echo "[INFO] Press any key to continue"
 read -n 1 -s
 
 if [ ${REBOOT} == true ]; then
