@@ -10,17 +10,21 @@
 # CONFIGURATION
 ###################################################################################################
 
-MAINNET_DOMAIN="<domain of mainnet node>"
-TESTNET_DOMAIN="<domain of testnet node>"
-
-ARDOR_MAINNET_ADMIN_PASSWORD="<admin password of mainnet node>"
-ARDOR_TESTNET_ADMIN_PASSWORD="<admin password of testnnet node>"
-
 INSTALL_MAINNET_NODE=true
-INSTALL_TESTNET_NODE=true
+MAINNET_DOMAIN="<domain of mainnet node>"
+MAINNET_ADMIN_PASSWORD="<admin password of mainnet node>"
 
+DOWNLOAD_MAINNET_BLOCKCHAIN=true
 PUBLISH_MAINNET_DOMAIN=false  # enabling leads to no peer connection, it's a bug to be resolved
+
+
+INSTALL_TESTNET_NODE=true
+TESTNET_DOMAIN="<domain of testnet node>"
+TESTNET_ADMIN_PASSWORD="<admin password of testnet node>"
+
+DOWNLOAD_TESTNET_BLOCKCHAIN=true
 PUBLISH_TESTNET_DOMAIN=false  # enabling leads to no peer connection, it's a bug to be resolved
+
 
 REBOOT=true
 
@@ -83,7 +87,7 @@ server {
 
 
 NXT_MAINNET_PROPERTIES_FILE_CONTENT="
-nxt.adminPassword=${ARDOR_MAINNET_ADMIN_PASSWORD}
+nxt.adminPassword=${MAINNET_ADMIN_PASSWORD}
 nxt.enablePeerUPnP=false
 nxt.apiServerEnforcePOST=true
 $(if [ ${PUBLISH_MAINNET_DOMAIN} == true ]; then
@@ -100,11 +104,11 @@ fi)
 
 NXT_TESTNET_PROPERTIES_FILE_CONTENT="
 nxt.isTestnet=true
-nxt.adminPassword=${ARDOR_TESTNET_ADMIN_PASSWORD}
+nxt.adminPassword=${TESTNET_ADMIN_PASSWORD}
 nxt.enablePeerUPnP=false
 nxt.apiServerEnforcePOST=true
-$(if [ ${PUBLISH_MAINNET_DOMAIN} == true ]; then
-    echo "nxt.myAdress=${MAINNET_DOMAIN}"
+$(if [ ${PUBLISH_TESTNET_DOMAIN} == true ]; then
+    echo "nxt.myAdress=${TESTNET_DOMAIN}"
 fi)
 
 ## Contract Runnner Configuration ##
@@ -260,6 +264,7 @@ source ~/.profile
 
 
 echo "" && echo "[INFO] updating system ..."
+sudo apt update
 sudo unattended-upgrades --debug cat /var/log/unattended-upgrades/unattended-upgrades.log
 
 
@@ -268,7 +273,7 @@ sudo apt install -y nginx
 sudo service nginx stop
 
 
-echo "" && echo "[INFO] installing necessary tools..."
+echo "" && echo "[INFO] installing necessary tools ..."
 sudo apt install -y unzip
 
 
@@ -321,11 +326,11 @@ unzip ardor-client.zip
 
 if [ ${INSTALL_MAINNET_NODE} == true ]; then
 
-    echo "" && echo "[INFO] creating ardor mainnet folder"
+    echo "" && echo "[INFO] creating ardor mainnet folder ..."
     cp -r ardor ${ARDOR_MAINNET_FOLDER}
 
 
-    echo "" && echo "[INFO] creating ardor mainnet configuration"
+    echo "" && echo "[INFO] creating ardor mainnet configuration ..."
     echo "${NXT_MAINNET_PROPERTIES_FILE_CONTENT}" > ${ARDOR_MAINNET_FOLDER}/conf/nxt.properties
 
 
@@ -336,16 +341,29 @@ if [ ${INSTALL_MAINNET_NODE} == true ]; then
 
     echo "" && echo "[INFO] enabling ardor mainnet service ..."
     sudo systemctl enable ${ARDOR_MAINNET_SERVICE}.service
+
+
+    if [ ${DOWNLOAD_MAINNET_BLOCKCHAIN} == true ]; then
+
+        echo "" && echo "[INFO] downloading mainnet blockchain ..."
+        wget https://www.jelurida.com/Ardor-nxt_db.zip
+
+        echo "" && echo "[INFO] unzipping mainnet blockchain ..."
+        unzip Ardor-nxt_db.zip
+
+        echo "" && echo "[INFO] moving mainnet blockchain to ardor mainnet folder ..."
+        mv nxt_db/ ardor-mainnet/
+    fi
 fi
 
 
 if [ ${INSTALL_TESTNET_NODE} == true ]; then
 
-    echo "" && echo "[INFO] creating ardor testnet folder"
+    echo "" && echo "[INFO] creating ardor testnet folder ..."
     cp -r ardor ${ARDOR_TESTNET_FOLDER}
 
 
-    echo "" && echo "[INFO] creating ardor testnet configuration"
+    echo "" && echo "[INFO] creating ardor testnet configuration ..."
     echo "${NXT_TESTNET_PROPERTIES_FILE_CONTENT}" > ${ARDOR_TESTNET_FOLDER}/conf/nxt.properties
 
 
@@ -356,6 +374,19 @@ if [ ${INSTALL_TESTNET_NODE} == true ]; then
 
     echo "" && echo "[INFO] enabling ardor testnet service ..."
     sudo systemctl enable ${ARDOR_TESTNET_SERVICE}.service
+
+
+    if [ ${DOWNLOAD_TESTNET_BLOCKCHAIN} == true ]; then
+
+        echo "" && echo "[INFO] downloading testnet blockchain ..."
+        wget https://www.jelurida.com/Ardor-nxt_test_db.zip
+
+        echo "" && echo "[INFO] unzipping testnet blockchain ..."
+        unzip Ardor-nxt_test_db.zip
+
+        echo "" && echo "[INFO] moving testnet blockchain to ardor testnet folder ..."
+        mv nxt_test_db/ ardor-testnet/
+    fi
 fi
 
 
@@ -371,7 +402,7 @@ if [ ${ENABLE_LETSENCRYPT} == true ]; then
     sudo service nginx start
     sudo certbot --nginx  --agree-tos --register-unsafely-without-email --rsa-key-size 4096 --redirect ${MAINNET_DOMAIN_CMD} ${TESTNET_DOMAIN_CMD}
 
-    echo "" && echo "[INFO] creating renew certificate job"
+    echo "" && echo "[INFO] creating renew certificate job ..."
     echo "${RENEW_CERTIFICATE_SCRIPT_CONTENT}" > /home/${LOCAL_USER}/renew-certificate.sh
     sudo chmod 700 /home/${LOCAL_USER}/renew-certificate.sh
     (sudo crontab -l 2>> /dev/null; echo "${LETSENCRYPT_RENEW_EVENT}	/bin/bash /home/${LOCAL_USER}/renew-certificate.sh") | sudo crontab -
@@ -388,7 +419,7 @@ sudo chmod 700 /home/${LOCAL_USER}/update-nodes.sh
 
 echo "" && echo "[INFO] cleaning up ..."
 sudo apt autoremove -y
-rm -r ardor install-ardor.sh ardor-client.zip ardor-client.zip.asc
+rm -rf ardor install-ardor.sh *.zip *.zip.asc *.txt
 
 
 echo "" && echo "[INFO] Server ready to go."
