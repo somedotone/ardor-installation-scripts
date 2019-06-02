@@ -14,16 +14,18 @@ INSTALL_MAINNET_NODE=true
 MAINNET_DOMAIN="<domain of mainnet node>"
 MAINNET_ADMIN_PASSWORD="<admin password of mainnet node>"
 
+PUBLISH_MAINNET_DOMAIN=true
 DOWNLOAD_MAINNET_BLOCKCHAIN=true
-PUBLISH_MAINNET_DOMAIN=false  # enabling leads to no peer connection, it's a bug to be resolved
+IS_ARCHIVAL_MAINNET_NODE=false
 
 
 INSTALL_TESTNET_NODE=true
 TESTNET_DOMAIN="<domain of testnet node>"
 TESTNET_ADMIN_PASSWORD="<admin password of testnet node>"
 
+PUBLISH_TESTNET_DOMAIN=true
 DOWNLOAD_TESTNET_BLOCKCHAIN=true
-PUBLISH_TESTNET_DOMAIN=false  # enabling leads to no peer connection, it's a bug to be resolved
+IS_ARCHIVAL_TESTNET_NODE=false
 
 
 REBOOT=true
@@ -89,7 +91,10 @@ nxt.adminPassword=${MAINNET_ADMIN_PASSWORD}
 nxt.enablePeerUPnP=false
 nxt.apiServerEnforcePOST=true
 $(if [ ${PUBLISH_MAINNET_DOMAIN} == true ]; then
-    echo "nxt.myAdress=${MAINNET_DOMAIN}"
+    echo "nxt.myAddress=${MAINNET_DOMAIN}"
+fi)
+$(if [ ${IS_ARCHIVAL_MAINNET_NODE} == true ]; then
+    echo "nxt.maxPrunableLifetime=-1"
 fi)
 
 ## Contract Runnner Configuration ##
@@ -106,7 +111,10 @@ nxt.adminPassword=${TESTNET_ADMIN_PASSWORD}
 nxt.enablePeerUPnP=false
 nxt.apiServerEnforcePOST=true
 $(if [ ${PUBLISH_TESTNET_DOMAIN} == true ]; then
-    echo "nxt.myAdress=${TESTNET_DOMAIN}"
+    echo "nxt.myAddress=${TESTNET_DOMAIN}"
+fi)
+$(if [ ${IS_ARCHIVAL_TESTNET_NODE} == true ]; then
+    echo "nxt.maxPrunableLifetime=-1"
 fi)
 
 ## Contract Runnner Configuration ##
