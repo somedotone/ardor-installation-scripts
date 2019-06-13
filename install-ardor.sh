@@ -12,8 +12,8 @@
 
 INSTALL_MAINNET_NODE=true
 MAINNET_DOMAIN="<domain of mainnet node>"
-MAINNET_ADMIN_PASSWORD="<admin password of mainnet node>"
-
+MAINNET_ADMIN_PASSWORD="<password of ardor mainnet admin>" # leave it blank to disable password 
+                                                                # protection for protected APIs (not recommended)
 PUBLISH_MAINNET_DOMAIN=true
 DOWNLOAD_MAINNET_BLOCKCHAIN=true
 IS_ARCHIVAL_MAINNET_NODE=false
@@ -21,8 +21,8 @@ IS_ARCHIVAL_MAINNET_NODE=false
 
 INSTALL_TESTNET_NODE=true
 TESTNET_DOMAIN="<domain of testnet node>"
-TESTNET_ADMIN_PASSWORD="<admin password of testnet node>"
-
+TESTNET_ADMIN_PASSWORD="<password of ardor testnet admin>" # leave it blank to disable password 
+                                                                # protection for protected APIs (not recommended)
 PUBLISH_TESTNET_DOMAIN=true
 DOWNLOAD_TESTNET_BLOCKCHAIN=true
 IS_ARCHIVAL_TESTNET_NODE=false
@@ -312,11 +312,10 @@ fi
 if [ ${ENABLE_LETSENCRYPT} == true ]; then
 
     echo "" && echo "[INFO] installing Let's Encrypt certbot ..."
-    sudo apt-get install -y software-properties-common
+    sudo apt install -y software-properties-common
     sudo add-apt-repository -y ppa:certbot/certbot
-    sudo apt-get update
-    sudo apt-get upgrade -y
-    sudo apt-get install -y python-certbot-nginx
+    sudo apt update
+    sudo apt install -y python-certbot-nginx
 fi
 
 
