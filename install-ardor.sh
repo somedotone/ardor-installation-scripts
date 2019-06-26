@@ -288,7 +288,7 @@ sudo apt install -y openjdk-8-jre
 
 
 echo "" && echo "[INFO] enabling unattended-upgrade ..."
-echo "${UNATTENDED_UPGRADE_PERIODIC_SCRIPT_CONTENT}" | sudo tee /etc/apt/apt.conf.d/10periodic > /dev/null
+echo "${UNATTENDED_UPGRADE_PERIODIC_CONFIG_FILE_CONTENT}" | sudo tee /etc/apt/apt.conf.d/10periodic > /dev/null
 
 
 echo "" && echo "[INFO] configuring nginx ..."
