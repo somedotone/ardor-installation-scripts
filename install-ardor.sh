@@ -332,6 +332,7 @@ source ~/.profile
 
 echo "" && echo "[INFO] updating system ..."
 sudo apt update
+sudo apt install unattended-upgrades -y
 sudo unattended-upgrades --debug cat /var/log/unattended-upgrades/unattended-upgrades.log
 
 
