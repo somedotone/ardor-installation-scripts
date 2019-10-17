@@ -9,7 +9,6 @@ SERVER_DOMAIN="<domain of ubuntu server>"
 SUDO_USER_NAME="<name of to be created sudo user>"
 SUDO_USER_PWD="<password of to be created sudo user>"
 
-KNOWN_HOSTS_FILE_PATH="/home/<your user name>/.ssh/known_hosts"
 IS_MAC=true
 
 # use with caution. If you want to revoke your decission later, you manually need to edit /etc/ssh/sshd_config
@@ -21,6 +20,7 @@ DISABLE_ROOT_PASSWORD_LOGIN=false
 # DEFINES
 ###################################################################################################
 
+KNOWN_HOSTS_FILE_PATH="/home/$(whoami)/.ssh/known_hosts"
 CREATE_SUDO_USER_SCRIPT_NAME="create-sudo-user.sh"
 
 INSTALL_ARDOR_SCRIPT_NAME="install-ardor.sh"
