@@ -13,7 +13,7 @@
 INSTALL_MAINNET_NODE=true
 MAINNET_DOMAIN="<domain of mainnet node>"
 MAINNET_ADMIN_PASSWORD="<password of ardor mainnet admin>" # leave it blank to disable password 
-                                                                # protection for protected APIs (not recommended)
+                                                           # protection for protected APIs (not recommended)
 PUBLISH_MAINNET_DOMAIN=true
 DOWNLOAD_MAINNET_BLOCKCHAIN=true
 IS_ARCHIVAL_MAINNET_NODE=false
@@ -22,7 +22,7 @@ IS_ARCHIVAL_MAINNET_NODE=false
 INSTALL_TESTNET_NODE=true
 TESTNET_DOMAIN="<domain of testnet node>"
 TESTNET_ADMIN_PASSWORD="<password of ardor testnet admin>" # leave it blank to disable password 
-                                                                # protection for protected APIs (not recommended)
+                                                           # protection for protected APIs (not recommended)
 PUBLISH_TESTNET_DOMAIN=true
 DOWNLOAD_TESTNET_BLOCKCHAIN=true
 IS_ARCHIVAL_TESTNET_NODE=false
@@ -30,8 +30,11 @@ IS_ARCHIVAL_TESTNET_NODE=false
 
 REBOOT=true
 
+
 ENABLE_LETSENCRYPT=true
 LETSENCRYPT_RENEW_EVENT="30 2	1 */1 *" # At 02:30 on day-of-month 1 in every month.
+
+ENABLE_SELF_SIGNED_CERTIFICATE=false
 
 
 ###################################################################################################
@@ -82,6 +85,64 @@ server {
       proxy_set_header Host \$host;
       proxy_pass http://127.0.0.1:26876/;
   }
+}
+"
+
+
+NGINX_SELFSIGNED_MAINNET_GATEWAY_CONFIGURATION_FILE_CONTENT="
+server {
+  server_name ${MAINNET_DOMAIN};
+
+  location / {
+    proxy_bind 127.0.0.1;
+    proxy_set_header Host \$host;
+    proxy_pass http://127.0.0.1:27876/;
+  }
+
+    listen 443 ssl;
+    ssl_certificate /etc/nginx/ssl/mainnet/cert.pem;
+    ssl_certificate_key /etc/nginx/ssl/mainnet/key.pem;
+
+}
+
+server {
+  if (\$host = ${MAINNET_DOMAIN}) {
+    return 301 https://\$host\$request_uri;
+  }
+
+  listen 80;
+
+  server_name ${MAINNET_DOMAIN};
+  return 404;
+}
+"
+
+
+NGINX_SELFSIGNED_TESTNET_GATEWAY_CONFIGURATION_FILE_CONTENT="
+server {
+  server_name ${TESTNET_DOMAIN};
+
+  location / {
+    proxy_bind 127.0.0.1;
+    proxy_set_header Host \$host;
+    proxy_pass http://127.0.0.1:26876/;
+  }
+
+    listen 443 ssl;
+    ssl_certificate /etc/nginx/ssl/testnet/cert.pem;
+    ssl_certificate_key /etc/nginx/ssl/testnet/key.pem;
+
+}
+
+server {
+  if (\$host = ${TESTNET_DOMAIN}) {
+    return 301 https://\$host\$request_uri;
+  }
+
+  listen 80;
+
+  server_name ${TESTNET_DOMAIN};
+  return 404;
 }
 "
 
@@ -412,8 +473,36 @@ if [ ${ENABLE_LETSENCRYPT} == true ]; then
     sudo chmod 700 /home/${LOCAL_USER}/renew-certificate.sh
     (sudo crontab -l 2>> /dev/null; echo "${LETSENCRYPT_RENEW_EVENT}	/bin/bash /home/${LOCAL_USER}/renew-certificate.sh") | sudo crontab -
 
-# else
-    # TODO: Integrating selfsigned certificate
+
+elif [ ${ENABLE_SELF_SIGNED_CERTIFICATE} == true ]; then
+
+    if [ ${INSTALL_MAINNET_NODE} == true ]; then
+
+        echo "" && echo "[INFO] creating self signed certificate for mainnet ..."
+        openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=${MAINNET_DOMAIN}"
+        sudo mkdir -p /etc/nginx/ssl/mainnet
+        sudo mv cert.pem /etc/nginx/ssl/mainnet
+        sudo mv key.pem /etc/nginx/ssl/mainnet
+
+        echo "" && echo "[INFO] updating mainnet gateway ..."
+        sudo rm -f /etc/nginx/conf.d/mainnet-gateway.conf
+        echo "${NGINX_SELFSIGNED_MAINNET_GATEWAY_CONFIGURATION_FILE_CONTENT}" | sudo tee /etc/nginx/conf.d/mainnet-gateway.conf > /dev/null
+    fi
+
+
+    if [ ${INSTALL_TESTNET_NODE} == true ]; then
+
+        echo "" && echo "[INFO] creating self signed certificate for testnet ..."
+        openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=${TESTNET_DOMAIN}"
+        sudo mkdir -p /etc/nginx/ssl/testnet
+        sudo mv cert.pem /etc/nginx/ssl/testnet
+        sudo mv key.pem /etc/nginx/ssl/testnet
+
+        echo "" && echo "[INFO] updating testnet gateway ..."
+        sudo rm -f /etc/nginx/conf.d/testnet-gateway.conf
+        echo "${NGINX_SELFSIGNED_TESTNET_GATEWAY_CONFIGURATION_FILE_CONTENT}" | sudo tee /etc/nginx/conf.d/testnet-gateway.conf > /dev/null
+    fi
+
 fi
 
 
